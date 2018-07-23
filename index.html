@@ -41,42 +41,66 @@
   </style>
 </head>
 <body>
+  <h1>在线生成二维码</h1>
+  <h2>纯JS版本</h2>
   <textarea id="inputText" placeholder="Type something..." autofocus></textarea>
   <canvas id="qrcode" class="unselectable"></canvas>
-  <a href="https://github.com/asoul/qrcode"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
-  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.js"></script>
   <script src="js/qrcode.min.js"></script>
   <script>
+
+function queryString()
+{
+    var queryString = window.location.search;
+    var varArray = queryString.split("&");
+    var ret = ""
+    for (var i=0;i<varArray.length;i++) {
+      var param = varArray[i].split("=");
+      ret+=param[1];
+    }
+    return ret;
+};
+
+function genQR() {
+	var text = $("#inputText").val()
+	if (text === '') {
+	  $('#qrcode').html('')
+	  return
+	}
+	var qrcode = new QrCode(text).getData()
+
+	var canvas = document.getElementById('qrcode')
+	var ctx = canvas.getContext('2d')
+
+	// Set height and width
+	var CELL_HEIGHT = 12
+	var minWidth = qrcode.length * CELL_HEIGHT
+	canvas.setAttribute('height', minWidth)
+	canvas.setAttribute('width', minWidth)
+
+	// Draw qrcode on canvas
+	qrcode.forEach(function (row, rowIdx) {
+	  row.forEach(function (cell, cellIdx) {
+	    if (cell === 1) {
+	      ctx.fillRect(cellIdx * CELL_HEIGHT,
+			   rowIdx * CELL_HEIGHT,
+			   CELL_HEIGHT,
+			   CELL_HEIGHT)
+	    }
+	  })
+	})
+};
+
     $(document).ready(function () {
-      $("#inputText").keyup(function () {
-        var text = $("#inputText").val()
-        if (text === '') {
-          $('#qrcode').html('')
-          return
-        }
-        var qrcode = new QrCode(text).getData()
-
-        var canvas = document.getElementById('qrcode')
-        var ctx = canvas.getContext('2d')
-
-        // Set height and width
-        var CELL_HEIGHT = 12
-        var minWidth = qrcode.length * CELL_HEIGHT
-        canvas.setAttribute('height', minWidth)
-        canvas.setAttribute('width', minWidth)
-
-        // Draw qrcode on canvas
-        qrcode.forEach(function (row, rowIdx) {
-          row.forEach(function (cell, cellIdx) {
-            if (cell === 1) {
-              ctx.fillRect(cellIdx * CELL_HEIGHT,
-                           rowIdx * CELL_HEIGHT,
-                           CELL_HEIGHT,
-                           CELL_HEIGHT)
-            }
-          })
-        })
-      })
+	
+        var ta = document.getElementById("inputText").value; 
+        if (ta.value==undefined) {
+		if (queryString() != "undefined") {
+       			document.getElementById("inputText").value = queryString(); 
+     			genQR(); 
+		}
+	}
+      $("#inputText").keyup(genQR)
       $("#qrcode").click(function () {
         var canvas = document.getElementById('qrcode')
 
